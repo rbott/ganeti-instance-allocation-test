@@ -15,12 +15,12 @@ hscan -L
 
 Copy the cluster state file to your Python environment and see if the state parses successfully:
 ```shell
-./start --mode LOCAL.data
+./start.py --mode LOCAL.data
 ```
 
 Tell it to try and remove the first node from each node group (there will be at least one `default` group):
 ```shell
-./start --mode remove-first-of-group LOCAL.data
+./start.py --mode remove-first-of-group LOCAL.data
 ```
 
 If everything works out fine, you should see how the tool tries to move primary/secondary instances away from the selected Ganeti node. You might see some error messages about not enough memory/disks/cpus/spindles etc. while it loops over all nodes to find a suitiable one for the current instance. This is fine as long as it finally succeeds in finding a new node. If it fails, it will stop the process, print out `Failed to remove first node` and move on to the next node group. 
@@ -28,7 +28,7 @@ If everything works out fine, you should see how the tool tries to move primary/
 You can also tell it to remove a specific Ganeti node:
 
 ```shell
-./start --mode remove --node node01.ganeti.local LOCAL.data
+./start.py --mode remove --node node01.ganeti.local LOCAL.data
 ```
 
 ## Limitations
