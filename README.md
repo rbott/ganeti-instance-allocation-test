@@ -15,7 +15,7 @@ hscan -L
 
 Copy the cluster state file to your Python environment and see if the state parses successfully:
 ```shell
-./start.py --mode LOCAL.data
+./start.py --mode dump LOCAL.data
 ```
 
 Tell it to try and remove the first node from each node group (there will be at least one `default` group):
