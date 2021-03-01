@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 from typing import List, Tuple
 
+from tabulate import tabulate
+
 from ganeti_parser.GanetiNodeGroup import GanetiNodeGroup
 from ganeti_parser.GanetiNode import GanetiNode
 from ganeti_parser.GanetiInstance import GanetiInstance
@@ -260,6 +262,7 @@ class GanetiCluster:
             if instance.pnode == node.name:
                 spindles_sum += instance.spindles
         return int(spindles_sum / allowed_spindles * 100)
+
     def _get_max_failn1_memory_used_percentage(self, node: GanetiNode) -> Tuple[str, int]:
         memory_sum = 0
         memory_sum_by_node = {}
@@ -278,7 +281,51 @@ class GanetiCluster:
         failn1_memory_sum = memory_sum + memory_sum_by_node[node_with_largest_memory_amount_on_nodefail]
 
         return (node_with_largest_memory_amount_on_nodefail, int(failn1_memory_sum / node.total_memory * 100))
+    
+    def _get_max_failn1_cpu_used_percentage(self, node: GanetiNode) -> Tuple[str, int]:
+        cpu_sum = 0
+        cpu_sum_by_node = {}
+        for secondary_node in self.nodes:
+            if secondary_node.name != node.name:
+                cpu_sum_by_node[secondary_node.name] = 0
+
+        vcpu_ratio = self._get_cpu_ratio_by_node(node)
+        allowed_virtual_cpus = node.total_cpus * vcpu_ratio
+
+        # get CPU for primary and secondary instances
+        for instance in self.instances:
+            if instance.pnode == node.name:
+                cpu_sum += instance.vcpus
+            elif instance.snodes == node.name:
+                cpu_sum_by_node[instance.pnode] += instance.vcpus
         
+        node_with_largest_vcpu_count_on_nodefail = max(cpu_sum_by_node, key=cpu_sum_by_node.get)
+        failn1_vcpu_sum = cpu_sum + cpu_sum_by_node[node_with_largest_vcpu_count_on_nodefail]
+
+        return (node_with_largest_vcpu_count_on_nodefail, int(failn1_vcpu_sum / allowed_virtual_cpus * 100))
+
+    def _get_max_failn1_spindles_used_percentage(self, node: GanetiNode) -> Tuple[str, int]:
+        spindles_sum = 0
+        spindles_sum_by_node = {}
+        for secondary_node in self.nodes:
+            if secondary_node.name != node.name:
+                spindles_sum_by_node[secondary_node.name] = 0
+
+        spindle_ratio = self._get_spindle_ratio_by_node(node)
+        allowed_spindles = node.spindles * spindle_ratio
+
+        # get spindles for primary and secondary instances
+        for instance in self.instances:
+            if instance.pnode == node.name:
+                spindles_sum += instance.spindles
+            elif instance.snodes == node.name:
+                spindles_sum_by_node[instance.pnode] += instance.spindles
+        
+        node_with_largest_spindle_count_on_nodefail = max(spindles_sum_by_node, key=spindles_sum_by_node.get)
+        failn1_spindles_sum = spindles_sum + spindles_sum_by_node[node_with_largest_spindle_count_on_nodefail]
+
+        return (node_with_largest_spindle_count_on_nodefail, int(failn1_spindles_sum / allowed_spindles * 100))
+
     # public methods
 
     # add elements to the cluster
@@ -336,11 +383,46 @@ class GanetiCluster:
     def dump_cluster(self):
         for node_group in self.node_groups:
             print("Node-Group: {}".format(node_group.name))
+            lines = []
+            lines.append([
+                "Node",
+                "Primary Inst",
+                "Secondary Inst",
+                "Memory",
+                "Disk",
+                "CPUs",
+                "Spindles"
+            ])
             for node in self.get_nodes_by_group(node_group):
-                print(" {}, {} Primary Instances, {} Secondary Instances, {}% Memory Usage, {}% Disk Usage, {}% CPU Usage, {}% Spindle Usage".format(
-                    node.name, self._count_primary_instances(node), self._count_secondary_instances(node),
-                    self._get_memory_used_percentage(node), self._get_disk_used_percentage(node),
-                    self._get_cpu_used_percentage(node), self._get_spindles_used_percentage(node)))
-                
+
+                lines.append([
+                    node.name.split(".")[0],
+                    self._count_primary_instances(node),
+                    self._count_secondary_instances(node),
+                    "{}%".format(self._get_memory_used_percentage(node)),
+                    "{}%".format(self._get_disk_used_percentage(node)),
+                    "{}%".format(self._get_cpu_used_percentage(node)),
+                    "{}%".format(self._get_spindles_used_percentage(node))
+                    ]
+                )
+
                 failn1_mem_node, failn1_mem_percentage = self._get_max_failn1_memory_used_percentage(node)
-                print("  Fail-N-1-Checks: {}% Max Memory Used ({})".format(failn1_mem_percentage, failn1_mem_node))
+                failn1_cpu_node, failn1_cpu_percentage = self._get_max_failn1_cpu_used_percentage(node)
+                failn1_spindle_node, failn1_spindle_percentage = self._get_max_failn1_spindles_used_percentage(node)
+
+                lines.append([
+                    "* simulate Fail-N-1",
+                    "",
+                    "",
+                    "{}% (by {})".format(failn1_mem_percentage, failn1_mem_node.split(".")[0]),
+                    "",
+                    "{}% (by {})".format(failn1_cpu_percentage, failn1_cpu_node.split(".")[0]),
+                    "{}% (by {})".format(failn1_spindle_percentage, failn1_spindle_node.split(".")[0]),
+                ])
+                lines.append([
+                    "", "", "", "", "", "", ""
+                ])
+
+            print()
+            print(tabulate(lines, headers="firstrow", tablefmt="github"))
+            print()

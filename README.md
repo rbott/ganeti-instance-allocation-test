@@ -4,7 +4,12 @@ With this script
 
 ## Requirements
 
-This script has been tested against plain Python 3.8 and does not rely on any non-standard modules. As it uses type hints according to the [Python 3.8 documentation](https://docs.python.org/3.8/library/typing.html) it might not run on older or newer versions. Ganeti data has been successfully parsed from 2.15 and 2.16 clusters. 3.0 should also work, but is untested.
+This script has been tested against plain Python 3.8 and does not rely on any non-standard modules. As it uses type hints according to the [Python 3.8 documentation](https://docs.python.org/3.8/library/typing.html) it might not run on older or newer versions. Ganeti data has been successfully parsed from 2.15 and 2.16 clusters. 3.0 should also work, but is untested. It requires the `tabulate` Python module for output formatting (use your favorite Python dependency manager):
+
+```shell
+$ pip install tabulate
+$ apt install python3-tabulate
+```
 
 ## Usage
 
