@@ -252,6 +252,14 @@ class GanetiCluster:
                 cpu_sum += instance.vcpus
         return int(cpu_sum / allowed_virtual_cpus * 100)
 
+    def _get_spindles_used_percentage(self, node: GanetiNode) -> int:
+        spindles_sum = 0
+        spindles_ratio = self._get_spindle_ratio_by_node(node)
+        allowed_spindles = node.spindles * spindles_ratio
+        for instance in self.instances:
+            if instance.pnode == node.name:
+                spindles_sum += instance.spindles
+        return int(spindles_sum / allowed_spindles * 100)
     # public methods
 
     # add elements to the cluster
@@ -310,8 +318,9 @@ class GanetiCluster:
         for node_group in self.node_groups:
             print("Node-Group: {}".format(node_group.name))
             for node in self.get_nodes_by_group(node_group):
-                print(" {}, {} Primary Instances, {} Secondary Instances, {}% Memory Usage, {}% Disk Usage, {}% CPU Usage".format(
+                print(" {}, {} Primary Instances, {} Secondary Instances, {}% Memory Usage, {}% Disk Usage, {}% CPU Usage, {}% Spindle Usage".format(
                     node.name, self._count_primary_instances(node), self._count_secondary_instances(node),
-                    self._get_memory_used_percentage(node), self._get_disk_used_percentage(node), self._get_cpu_used_percentage(node)))
+                    self._get_memory_used_percentage(node), self._get_disk_used_percentage(node),
+                    self._get_cpu_used_percentage(node), self._get_spindles_used_percentage(node)))
 
 
