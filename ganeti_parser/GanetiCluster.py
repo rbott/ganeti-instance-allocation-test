@@ -241,7 +241,7 @@ class GanetiCluster:
     def _get_disk_used_percentage(self, node: GanetiNode) -> int:
         disk_sum = 0
         for instance in self.instances:
-            if instance.pnode == node.name:
+            if instance.pnode == node.name or instance.snodes == node.name:
                 disk_sum += instance.disk_size
         return int(disk_sum / node.total_disk * 100)
 
