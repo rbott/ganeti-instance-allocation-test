@@ -201,7 +201,7 @@ class GanetiCluster:
         pnode = self.get_node_by_name(instance.pnode)
         snode = self.get_node_by_name(instance.snodes)
         if instance.pnode == node_name:
-            print("** Looking for a new primary node for {} (Memory: {}MB, Disk: {}MB)".format(instance.name, instance.disk_size, instance.memory_size))
+            print("** Looking for a new primary node for {} (Memory: {}MB, Disk: {}MB)".format(instance.name, instance.memory_size, instance.disk_size))
             new_node = self._find_new_primary_for_instance(instance, [pnode, snode])
             if new_node:
                 instance.pnode = new_node.name
@@ -209,7 +209,7 @@ class GanetiCluster:
                 if not self._failover_instance(instance):
                     raise Exception("Unable to find new primary node for {}".format(instance.name))
         elif instance.snodes == node_name:
-            print("** Looking for a new secondary node for {} (Memory: {}MB, Disk: {}MB)".format(instance.name, instance.disk_size, instance.memory_size))
+            print("** Looking for a new secondary node for {} (Memory: {}MB, Disk: {}MB)".format(instance.name, instance.memory_size, instance.disk_size))
             new_node = self._find_new_secondary_for_instance(instance, [pnode, snode])
             if new_node:
                 instance.snodes = new_node.name
