@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-from typing import List
+from typing import List, Tuple
 
 from ganeti_parser.GanetiNodeGroup import GanetiNodeGroup
 from ganeti_parser.GanetiNode import GanetiNode
@@ -260,6 +260,25 @@ class GanetiCluster:
             if instance.pnode == node.name:
                 spindles_sum += instance.spindles
         return int(spindles_sum / allowed_spindles * 100)
+    def _get_max_failn1_memory_used_percentage(self, node: GanetiNode) -> Tuple[str, int]:
+        memory_sum = 0
+        memory_sum_by_node = {}
+        for secondary_node in self.nodes:
+            if secondary_node.name != node.name:
+                memory_sum_by_node[secondary_node.name] = 0
+
+        # get memory for primary and secondary instances
+        for instance in self.instances:
+            if instance.pnode == node.name:
+                memory_sum += instance.memory_size
+            elif instance.snodes == node.name:
+                memory_sum_by_node[instance.pnode] += instance.memory_size
+        
+        node_with_largest_memory_amount_on_nodefail = max(memory_sum_by_node, key=memory_sum_by_node.get)
+        failn1_memory_sum = memory_sum + memory_sum_by_node[node_with_largest_memory_amount_on_nodefail]
+
+        return (node_with_largest_memory_amount_on_nodefail, int(failn1_memory_sum / node.total_memory * 100))
+        
     # public methods
 
     # add elements to the cluster
@@ -322,5 +341,6 @@ class GanetiCluster:
                     node.name, self._count_primary_instances(node), self._count_secondary_instances(node),
                     self._get_memory_used_percentage(node), self._get_disk_used_percentage(node),
                     self._get_cpu_used_percentage(node), self._get_spindles_used_percentage(node)))
-
-
+                
+                failn1_mem_node, failn1_mem_percentage = self._get_max_failn1_memory_used_percentage(node)
+                print("  Fail-N-1-Checks: {}% Max Memory Used ({})".format(failn1_mem_percentage, failn1_mem_node))
