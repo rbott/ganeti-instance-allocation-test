@@ -24,7 +24,7 @@ if args.mode == "dump":
     cluster.dump_cluster()
     exit(0)
 
-elif args.mode == "remove-first-of-group":
+elif (args.mode == "remove-first-of-group") or (args.mode == 'remove-first'):
     for node_group in cluster.node_groups:
         print("Working on node group {}".format(node_group.name))
         first_node_from_group = cluster.get_nodes_by_group(node_group)[0].name
