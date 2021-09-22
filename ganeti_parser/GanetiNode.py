@@ -1,8 +1,10 @@
 #!/usr/bin/python3
 from typing import List
+import re
 
 class GanetiNode:
     name = ""
+    shortname = ""
     total_memory = 0
     used_memory = 0
     free_memory = 0
@@ -20,6 +22,7 @@ class GanetiNode:
 
     def __init__(self, name, total_memory, used_memory, free_memory, total_disk, free_disk, total_cpus, status, group_uuid, spindles, tags, exclusive_storage, free_spindles, node_cpus, cpu_speed):
         self.name = name
+        self.shortname = re.sub(r'\..*', '', name)
         self.total_memory = total_memory
         self.used_memory = used_memory
         self.free_memory = free_memory

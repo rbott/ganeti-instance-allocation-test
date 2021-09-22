@@ -363,13 +363,17 @@ class GanetiCluster:
     # retrieve a GanetiNode object through its node name
     def get_node_by_name(self, node_name) -> GanetiNode:
         for node in self.nodes:
-            if node.name == node_name:
+            if (node_name == node.name) or (node_name == node.shortname):
                 return node
         raise Exception("Node {} not found".format(node_name))
 
     # try to remove a node from the cluster by moving away all instances
     def remove_node(self, node_name: str):
         node_to_remove = self.get_node_by_name(node_name)
+
+        if node_name == node_to_remove.shortname:
+            node_name = node_to_remove.name
+
         for instance in self.instances:
             self._evacuate_instance(node_name, instance)
 
