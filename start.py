@@ -18,11 +18,12 @@ print("Found {} Node-Groups, {} Nodes, {} Instances, {} Allocation Policies".for
 for node_group in cluster.node_groups:
     filtered_nodes = cluster.get_nodes_by_group(node_group)
     filtered_instances = cluster.get_instances_by_nodes(filtered_nodes)
-    print("{}: {} Nodes with {} Instances".format(node_group.name, len(filtered_nodes), len(filtered_instances)))
+    print("  {}: {} Nodes with {} Instances".format(node_group.name, len(filtered_nodes), len(filtered_instances)))
 
 if args.mode == "dump":
     cluster.dump_cluster()
     exit(0)
+
 elif args.mode == "remove-first-of-group":
     for node_group in cluster.node_groups:
         print("Working on node group {}".format(node_group.name))
@@ -36,6 +37,7 @@ elif args.mode == "remove-first-of-group":
         except:
             print("Failed to remove first node")
         print()
+
 elif args.mode == "remove":
     if not args.node:
         print()

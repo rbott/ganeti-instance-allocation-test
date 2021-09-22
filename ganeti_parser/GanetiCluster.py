@@ -48,11 +48,11 @@ class GanetiCluster:
     def _node_has_enough_memory(self, node: GanetiNode, new_instance: GanetiInstance) -> bool:
         memory_used = self._get_node_used_memory(node)
         if memory_used + new_instance.memory_size > node.total_memory:
-            print("{}*** Not enough memory for {} on {} ({}MB already used on node, {}MB total available){}".format(
+            print("  {}*** Not enough memory for {} on {} ({}MB already used on node, {}MB total available){}".format(
                 "\033[91m", new_instance.name, node.name, memory_used, node.total_memory, "\033[0m"
             ))
             return False
-        print("{}*** {} has enough memory left ({}MB already used on node, {}MB total available){}".format(
+        print("  {}*** {} has enough memory left ({}MB already used on node, {}MB total available){}".format(
             "\033[92m", node.name, memory_used, node.total_memory, "\033[0m"
         ))
         return True
@@ -61,11 +61,11 @@ class GanetiCluster:
     def _node_has_enough_disk(self, node: GanetiNode, new_instance: GanetiInstance) -> bool:
         disk_used = self._get_node_used_disk(node)
         if disk_used + new_instance.disk_size > node.total_disk:
-            print("{}*** Not enough disk for {} on {} ({}MB already used on node, {}MB total available){}".format(
+            print("  {}*** Not enough disk for {} on {} ({}MB already used on node, {}MB total available){}".format(
                 "\033[91m", new_instance.name, node.name, disk_used, node.total_disk, "\033[0m"
             ))
             return False
-        print("{}*** {} has enough disk left ({}MB already used on node, {}MB total available){}".format(
+        print("  {}*** {} has enough disk left ({}MB already used on node, {}MB total available){}".format(
             "\033[92m", node.name, disk_used, node.total_disk, "\033[0m"
         ))
         return True
@@ -89,11 +89,11 @@ class GanetiCluster:
             if instance.pnode == node.name or instance.snodes == node.name:
                 cpus_used += instance.vcpus
         if cpus_used + new_instance.vcpus > ( node.total_cpus * vcpu_ratio ):
-            print("{}*** Not enough CPUs for {} on {} ({} already used on node, {} total available){}".format(
+            print("  {}*** Not enough CPUs for {} on {} ({} already used on node, {} total available){}".format(
                 "\033[91m", new_instance.name, node.name, cpus_used, node.total_cpus * vcpu_ratio, "\033[0m"
             ))
             return False
-        print("{}*** {} has enough CPUs left ({} already used on node, {} total available){}".format(
+        print("  {}*** {} has enough CPUs left ({} already used on node, {} total available){}".format(
             "\033[92m", node.name, cpus_used, node.total_cpus * vcpu_ratio, "\033[0m"
         ))
         return True
@@ -117,11 +117,11 @@ class GanetiCluster:
             if instance.pnode == node.name or instance.snodes == node.name:
                 spindles_used += instance.spindles
         if spindles_used + new_instance.spindles > ( node.spindles * spindle_ratio ):
-            print("{}*** Not enough spindles for {} on {} ({} already used on node, {} total available){}".format(
+            print("  {}*** Not enough spindles for {} on {} ({} already used on node, {} total available){}".format(
                 "\033[91m", new_instance.name, node.name, spindles_used, node.spindles * spindle_ratio, "\033[0m"
             ))
             return False
-        print("{}*** {} has enough spindles left ({} already used on node, {} total available){}".format(
+        print("  {}*** {} has enough spindles left ({} already used on node, {} total available){}".format(
             "\033[92m", node.name, spindles_used, node.spindles * spindle_ratio, "\033[0m"
         ))
         return True
@@ -130,7 +130,7 @@ class GanetiCluster:
     def _is_this_instance_tag_already_on_this_node(self, tag: str, node: GanetiNode) -> bool:
         for instance in self.instances:
             if instance.pnode == node.name and tag in instance.tags:
-                print("{}*** Tag {} already present on primary instance on {}".format(
+                print("  {}*** Tag {} already present on primary instance on {}".format(
                     "\033[91m", tag, node.name, "\033[0m"
                 ))
                 return True
@@ -186,12 +186,12 @@ class GanetiCluster:
         if memory_used > new_primary.total_memory:
             instance.pnode = old_primary
             instance.snodes = old_secondary
-            print("{}*** Instance failover failed (not enough resources on target){}".format(
+            print("  {}*** Instance failover failed (not enough resources on target){}".format(
                 "\033[91m","\033[0m"
             ))
             return False
 
-        print("{}*** Instance failover performed{}".format(
+        print("  {}*** Instance failover performed{}".format(
             "\033[93m","\033[0m"
         ))
         return True
@@ -382,7 +382,7 @@ class GanetiCluster:
     # print out the current cluster state (with usage percentages)
     def dump_cluster(self):
         for node_group in self.node_groups:
-            print("Node-Group: {}".format(node_group.name))
+            print("\nNode-Group: {}".format(node_group.name))
             lines = []
             lines.append([
                 "Node",
